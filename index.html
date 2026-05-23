@@ -116,6 +116,29 @@ button{cursor:pointer;font-family:var(--font)}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 </style>
+
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-touch-fullscreen" content="yes"/>
+<link rel="manifest" id="pwa-manifest"/>
+<script>
+// Inline manifest
+const manifest = {
+  name: "আমার জীবন",
+  short_name: "আমার জীবন",
+  description: "ব্যক্তিগত লাইফস্টাইল ম্যানেজার",
+  start_url: "./",
+  display: "standalone",
+  background_color: "#0f0f1a",
+  theme_color: "#0f0f1a",
+  orientation: "portrait",
+  icons: [
+    { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f0f1a'/><text y='.9em' font-size='80' x='10'>🌙</text></svg>", sizes: "192x192", type: "image/svg+xml" },
+    { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f0f1a'/><text y='.9em' font-size='80' x='10'>🌙</text></svg>", sizes: "512x512", type: "image/svg+xml" }
+  ]
+};
+const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
+</script>
 </head>
 <body>
 <div id="splash">
@@ -393,7 +416,30 @@ function buildRptHTML(data){
   if(data.donation){const d=data.donation;const cR=Object.entries(d.byCategory).sort((a,b)=>b[1]-a[1]).map(([c,v])=>cRow(c,v)).join('');html+=sec('দানের সামারি','🤲',row('মোট দান','৳'+Math.round(d.total).toLocaleString('en-IN'),'#d69e2e')+row('মোট এন্ট্রি',d.items.length+'টি')+row('জাকাত','৳'+Math.round(d.byCategory['জাকাত']||0).toLocaleString('en-IN'),'#6c63ff')+row('সাদকা/অন্যান্য','৳'+Math.round(d.total-(d.byCategory['জাকাত']||0)).toLocaleString('en-IN'),'#2d8a4e')+'<div style="margin-top:10px;margin-bottom:6px;font-size:12px;font-weight:600;color:#555">ক্যাটাগরি অনুযায়ী:</div>'+cR+d.items.slice(0,20).map(i=>'<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 8px;background:#fffbf0;border-radius:4px;margin-bottom:3px"><span>'+i.name+' <span style="color:#999">('+i.cat+')</span></span><span style="font-weight:600">৳'+Math.round(i.amount).toLocaleString('en-IN')+'</span></div>').join(''));}
   if(data.family){const f=data.family;const pI=members.flatMap(m=>(m.problems||[]).map(p=>({...p,mn:m.name}))).filter(p=>!p.solved).slice(0,10);html+=sec('পরিবারের সামারি','👨‍👩‍👧',row('মোট সদস্য',f.total+'জন')+row('চলমান সমস্যা',f.open+'টি','#e53e3e')+row('সমাধান হয়েছে',f.solved+'টি','#2d8a4e')+'<div style="margin-top:10px;margin-bottom:6px;font-size:12px;font-weight:600;color:#555">গ্রুপ অনুযায়ী:</div>'+f.byGroup.map(g=>'<div style="display:flex;justify-content:space-between;padding:4px 8px;background:#f8f8ff;border-radius:5px;margin-bottom:3px;font-size:12px"><span>'+g.group+'</span><span style="font-weight:600">'+g.count+'জন</span></div>').join('')+(pI.length?'<div style="margin-top:10px;font-size:12px;font-weight:600;color:#e53e3e;margin-bottom:4px">চলমান সমস্যা:</div>'+pI.map(p=>'<div style="font-size:12px;padding:4px 8px;background:#fff5f5;border-radius:4px;margin-bottom:3px">'+p.mn+': '+p.title+' <span style="color:#e53e3e;float:right">'+p.progress+'%</span></div>').join(''):''));}
   if(data.children){const c=data.children;const gP=c.gTotal?Math.round(c.gDone/c.gTotal*100):0;html+=sec('শিশুদের সামারি','📚',row('মোট শিশু',c.total+'জন')+row('লক্ষ্য সম্পন্ন',c.gDone+'/'+c.gTotal,'#2d8a4e')+row('লক্ষ্য অর্জনের হার',gP+'%','#6c63ff')+'<div style="height:8px;background:#eee;border-radius:4px;margin:6px 0;overflow:hidden"><div style="height:100%;width:'+gP+'%;background:#6c63ff;border-radius:4px"></div></div>'+c.items.map(ch=>{const av=ch.dev?Object.values(ch.dev).filter(v=>v>0):[];const aS=av.length?(av.reduce((a,b)=>a+b,0)/av.length).toFixed(1):'—';const dG=(ch.goals||[]).filter(g=>g.done).length;return'<div style="background:#f8f8ff;border-radius:6px;padding:8px 10px;margin-bottom:6px"><div style="font-weight:600;font-size:13px;margin-bottom:3px">'+(ch.gender==='মেয়ে'?'👧':'👦')+' '+ch.name+(ch.class?' · '+ch.class:'')+'</div><div style="font-size:11px;color:#555">'+(ch.school||'')+(ch.group?' · '+ch.group:'')+'</div><div style="display:flex;gap:12px;margin-top:4px;font-size:11px"><span>বিকাশ স্কোর: <b>'+aS+'/৫</b></span><span>লক্ষ্য: <b>'+dG+'/'+(ch.goals||[]).length+'</b></span></div></div>';}).join(''));}
-  const full='<!DOCTYPE html>\n<html lang="bn">\n<head>\n<meta charset="UTF-8"/>\n<title>আমার জীবন রিপোর্ট</title>\n<style>\n@media print{body{margin:0}.np{display:none}@page{margin:1.5cm;size:A4}}\nbody{font-family:"SolaimanLipi","Kalpurush","Nirmala UI","Segoe UI",sans-serif;max-width:750px;margin:0 auto;padding:24px;color:#1a1a2e;background:#fff;line-height:1.6}\nh1{font-size:22px;color:#6c63ff;margin-bottom:4px}\n.meta{font-size:12px;color:#888;margin-bottom:24px;padding-bottom:12px;border-bottom:2px solid #6c63ff}\n.footer{margin-top:32px;padding-top:12px;border-top:1px solid #eee;font-size:11px;color:#aaa;text-align:center}\n</style>\n</head>\n<body>\n<div class="np" style="background:#6c63ff;color:#fff;padding:10px 16px;border-radius:8px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center">\n<span style="font-weight:600;font-size:13px">প্রিন্ট করতে: Ctrl+P (PC) বা Cmd+P (Mac) চাপুন</span>\n<button onclick="window.print()" style="background:#fff;color:#6c63ff;border:none;padding:7px 16px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">🖨️ প্রিন্ট করুন</button>\n</div>\n<h1>🌙 আমার জীবন — সামারি রিপোর্ট</h1>\n<div class="meta"><div style="font-weight:600;font-size:14px">'+pLbl(period,from,to)+'</div><div>তৈরির তারিখ: '+pd+'</div></div>\n'+html+'\n<div class="footer">আমার জীবন অ্যাপ — ব্যক্তিগত লাইফস্টাইল ম্যানেজার</div>\n</body>\n</html>';
+  const full='<!DOCTYPE html>\n<html lang="bn">\n<head>\n<meta charset="UTF-8"/>\n<title>আমার জীবন রিপোর্ট</title>\n<style>\n@media print{body{margin:0}.np{display:none}@page{margin:1.5cm;size:A4}}\nbody{font-family:"SolaimanLipi","Kalpurush","Nirmala UI","Segoe UI",sans-serif;max-width:750px;margin:0 auto;padding:24px;color:#1a1a2e;background:#fff;line-height:1.6}\nh1{font-size:22px;color:#6c63ff;margin-bottom:4px}\n.meta{font-size:12px;color:#888;margin-bottom:24px;padding-bottom:12px;border-bottom:2px solid #6c63ff}\n.footer{margin-top:32px;padding-top:12px;border-top:1px solid #eee;font-size:11px;color:#aaa;text-align:center}\n</style>\n
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-touch-fullscreen" content="yes"/>
+<link rel="manifest" id="pwa-manifest"/>
+<script>
+// Inline manifest
+const manifest = {
+  name: "আমার জীবন",
+  short_name: "আমার জীবন",
+  description: "ব্যক্তিগত লাইফস্টাইল ম্যানেজার",
+  start_url: "./",
+  display: "standalone",
+  background_color: "#0f0f1a",
+  theme_color: "#0f0f1a",
+  orientation: "portrait",
+  icons: [
+    { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f0f1a'/><text y='.9em' font-size='80' x='10'>🌙</text></svg>", sizes: "192x192", type: "image/svg+xml" },
+    { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f0f1a'/><text y='.9em' font-size='80' x='10'>🌙</text></svg>", sizes: "512x512", type: "image/svg+xml" }
+  ]
+};
+const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
+</script>
+</head>\n<body>\n<div class="np" style="background:#6c63ff;color:#fff;padding:10px 16px;border-radius:8px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center">\n<span style="font-weight:600;font-size:13px">প্রিন্ট করতে: Ctrl+P (PC) বা Cmd+P (Mac) চাপুন</span>\n<button onclick="window.print()" style="background:#fff;color:#6c63ff;border:none;padding:7px 16px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">🖨️ প্রিন্ট করুন</button>\n</div>\n<h1>🌙 আমার জীবন — সামারি রিপোর্ট</h1>\n<div class="meta"><div style="font-weight:600;font-size:14px">'+pLbl(period,from,to)+'</div><div>তৈরির তারিখ: '+pd+'</div></div>\n'+html+'\n<div class="footer">আমার জীবন অ্যাপ — ব্যক্তিগত লাইফস্টাইল ম্যানেজার</div>\n</body>\n</html>';
   return{full,preview:html};
 }
 function previewReport(){const period=document.getElementById('rpt-period').value;const sec=document.getElementById('rpt-section').value;const cf=document.getElementById('rpt-from').value;const ct=document.getElementById('rpt-to').value;const data=buildRptData(period,sec,cf,ct);const{preview}=buildRptHTML(data);const pN={weekly:'সাপ্তাহিক',monthly:'মাসিক',yearly:'বার্ষিক'};document.getElementById('rpt-preview').innerHTML='<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-top:4px"><div style="font-size:13px;font-weight:600;color:var(--accent2);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)"><i class="ti ti-eye"></i> প্রিভিউ — '+(pN[period]||'')+' রিপোর্ট</div><div style="font-size:12px;line-height:1.8;color:var(--text)">'+preview+'</div></div>';}
@@ -502,5 +548,80 @@ renderAll();
   </div>
 
 </div>
+
+<script>
+// ===== SERVICE WORKER (অফলাইন সাপোর্ট) =====
+if('serviceWorker' in navigator) {
+  const swCode = `
+const CACHE = 'amar-jibon-v1';
+const ASSETS = [
+  self.location.href,
+  'https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css',
+  'https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/fonts/tabler-icons.woff2'
+];
+
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE).then(cache => {
+      return Promise.allSettled(ASSETS.map(url => cache.add(url).catch(()=>{})));
+    }).then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      if(cached) return cached;
+      return fetch(e.request).then(resp => {
+        if(resp && resp.status === 200) {
+          const clone = resp.clone();
+          caches.open(CACHE).then(cache => cache.put(e.request, clone));
+        }
+        return resp;
+      }).catch(() => cached || new Response('অফলাইন মোড', {headers:{'Content-Type':'text/plain'}}));
+    })
+  );
+});
+`;
+  const swBlob = new Blob([swCode], {type:'application/javascript'});
+  const swURL = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swURL, {scope: './'})
+    .then(reg => {
+      console.log('SW registered:', reg.scope);
+      // Check for updates
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if(newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            console.log('App updated!');
+          }
+        });
+      });
+    })
+    .catch(err => console.log('SW registration failed:', err));
+}
+
+// Show offline indicator
+window.addEventListener('online', () => {
+  document.getElementById('conn-status').style.display = 'none';
+});
+window.addEventListener('offline', () => {
+  document.getElementById('conn-status').style.display = 'flex';
+});
+</script>
+
+<!-- Offline indicator -->
+<div id="conn-status" style="display:none;position:fixed;top:0;left:0;right:0;background:#f59e0b;color:#000;padding:6px 12px;font-size:12px;font-weight:600;z-index:999;align-items:center;justify-content:center;gap:6px">
+  <i class="ti ti-wifi-off"></i> অফলাইন মোড — ডেটা লোকালেই আছে
+</div>
+
 </body>
 </html>
